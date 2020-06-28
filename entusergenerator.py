@@ -45,7 +45,7 @@ def get_users(from_file):
 def default_rule_names():
     return ['simple', 'surname', 'name', 'partial_name_and_surname', 'name_and_partial_surname']
 
-def produce_usernames(for_users, rule_names=default_rule_names(), reverse=True, lowercase=True, uppercase=True):
+def produce_usernames(for_users, rule_names=default_rule_names(), reverse=False, lowercase=False, uppercase=False):
     usernames = set()
     for user in for_users:
         user_data = user.split()
@@ -68,7 +68,7 @@ def main():
     logging.log(level=logging.DEBUG, msg=str(script_args))
 
     users = get_users(script_args.i)
-    usernames = produce_usernames(users)
+    usernames = produce_usernames(users, reverse=script_args.r, lowercase=script_args.l, uppercase=script_args.u)
     
     for username in usernames:
         print(username)
