@@ -1,2 +1,2 @@
-def surname(user_data):
-    return [user_data[1]]
+def surname(user_data, with_separator=None):
+    return [user_data[-1]]
