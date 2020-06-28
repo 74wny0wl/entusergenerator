@@ -1,0 +1,5 @@
+from usernamerules.simple import simple
+from usernamerules.surname import surname
+from usernamerules.name import name
+from usernamerules.partial_name_and_surname import partial_name_and_surname
+from usernamerules.name_and_partial_surname import name_and_partial_surname
