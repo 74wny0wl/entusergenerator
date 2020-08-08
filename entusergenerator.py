@@ -6,76 +6,77 @@ import os
 import usernamerules
 import utils.argparsers as argparsers
 
-from pprint import pprint
+
+DEFAULT_RULE_NAMES = ['simple', 'surname', 'name', 'partial_name_and_surname', 'name_and_partial_surname']
 
 
-def __apply__(rule_names, with_user_data, with_separator):
+def __apply(rule_names, with_user_data, with_separator):
     usernames = set()
     for rule_name in rule_names:
-            rule = getattr(usernamerules, rule_name)
-            usernames.update(rule(with_user_data, with_separator))
+        rule = getattr(usernamerules, rule_name)
+        usernames.update(rule(with_user_data, with_separator))
     return usernames
 
 
-def __produce_usernames_without_changes__(for_users, rule_names, separator=''):
+def __produce_usernames_without_changes(for_users, rule_names, separator=''):
     no_changes_usernames = set()
     for user in for_users:
         user_data = user.split()
-        no_changes_usernames.update(__apply__(rule_names, user_data, separator))
+        no_changes_usernames.update(__apply(rule_names, user_data, separator))
     return no_changes_usernames
 
 
-def __try_produce_usernames_reversed__(for_users, rule_names, reverse, separator=''):
+def __try_produce_usernames_reversed(for_users, rule_names, reverse, separator=''):
     reversed_usernames = set()
     if reverse:
         for user in for_users:
             user_data = user.split()
             user_data.reverse()
-            reversed_usernames.update(__apply__(rule_names, user_data, separator))
+            reversed_usernames.update(__apply(rule_names, user_data, separator))
     return reversed_usernames
 
 
-def __try_produce_rule_lowercase__(usernames, lowercase):
+def __try_produce_rule_lowercase(usernames, lowercase):
     lowercase_usernames = set()
-    if lowercase:       
+    if lowercase:
         lowercase_usernames = set([username.lower() for username in usernames])
     return lowercase_usernames
 
 
-def __try_produce_rule_uppercase__(usernames, uppercase):
+def __try_produce_rule_uppercase(usernames, uppercase):
     uppercase_usernames = set()
-    if uppercase:       
+    if uppercase:
         uppercase_usernames = set([username.upper() for username in usernames])
     return uppercase_usernames
 
 
-def __produce_without_separators__(for_users, rule_names, reverse):
-    usernames =  set()
-    
-    no_changes_usernames = __produce_usernames_without_changes__(for_users, rule_names)
-    reversed_usernames = __try_produce_usernames_reversed__(for_users, rule_names, reverse)
+def __produce_without_separators(for_users, rule_names, reverse):
+    usernames = set()
+
+    no_changes_usernames = __produce_usernames_without_changes(for_users, rule_names)
+    reversed_usernames = __try_produce_usernames_reversed(for_users, rule_names, reverse)
     usernames.update(no_changes_usernames)
     usernames.update(reversed_usernames)
 
     return usernames
 
 
-def __produce_with_separators__(for_users, rule_names, reverse, separators):
-    usernames =  set()
+def __produce_with_separators(for_users, rule_names, reverse, separators):
+    usernames = set()
 
     for separator in separators:
-        no_changes_usernames = __produce_usernames_without_changes__(for_users, rule_names, separator)
-        reversed_usernames = __try_produce_usernames_reversed__(for_users, rule_names, reverse, separator)
+        no_changes_usernames = __produce_usernames_without_changes(for_users, rule_names, separator)
+        reversed_usernames = __try_produce_usernames_reversed(for_users, rule_names, reverse, separator)
         usernames.update(no_changes_usernames)
         usernames.update(reversed_usernames)
-        
+
     return usernames
 
 
 def get_users(from_file):
     users = []
     if not os.path.isfile(from_file):
-       logging.error("File path {} does not exist.".format(from_file))
+        logging.error("File path {} does not exist.".format(from_file))
     else:
         with open(from_file, "r") as f:
             users = f.readlines()
@@ -83,17 +84,14 @@ def get_users(from_file):
     return users
 
 
-def default_rule_names():
-    return ['simple', 'surname', 'name', 'partial_name_and_surname', 'name_and_partial_surname']
-
-
-def produce_usernames(for_users, separators, rule_names=default_rule_names(), no_changes=True, reverse=False, lowercase=False, uppercase=False):
+def produce_usernames(for_users, separators, rule_names=DEFAULT_RULE_NAMES, reverse=False,
+                      lowercase=False, uppercase=False):
     base_usernames = set()
-    base_usernames.update(__produce_without_separators__(for_users, rule_names, reverse))
-    base_usernames.update(__produce_with_separators__(for_users, rule_names, reverse, separators))
-    
-    lowercase_usernames = __try_produce_rule_lowercase__(base_usernames, lowercase)
-    uppercase_usernames = __try_produce_rule_uppercase__(base_usernames, uppercase)
+    base_usernames.update(__produce_without_separators(for_users, rule_names, reverse))
+    base_usernames.update(__produce_with_separators(for_users, rule_names, reverse, separators))
+
+    lowercase_usernames = __try_produce_rule_lowercase(base_usernames, lowercase)
+    uppercase_usernames = __try_produce_rule_uppercase(base_usernames, uppercase)
 
     usernames = set()
     if lowercase:
@@ -102,20 +100,21 @@ def produce_usernames(for_users, separators, rule_names=default_rule_names(), no
         usernames.update(uppercase_usernames)
     else:
         usernames.update(base_usernames)
-    
+
     return usernames
 
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    
+
     arg_parser = argparsers.create_args_parser()
     script_args = arg_parser.parse_args()
     logging.log(level=logging.DEBUG, msg=str(script_args))
 
     users = get_users(script_args.i)
-    usernames = produce_usernames(users, separators = script_args.s, no_changes=script_args.n, reverse=script_args.r, lowercase=script_args.l, uppercase=script_args.u)
-    
+    usernames = produce_usernames(users, separators=script_args.s, reverse=script_args.r,
+                                  lowercase=script_args.l, uppercase=script_args.u)
+
     for username in usernames:
         print(username)
 
