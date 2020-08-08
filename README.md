@@ -1,4 +1,4 @@
-# entusergenerator.py 1.0.1
+# entusergenerator.py 1.1.0
 Enterprise usernames wordlist generator
 
 ## 1. Usage
